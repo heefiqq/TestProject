@@ -1,0 +1,94 @@
+﻿@using ForTest.Web.Admin.Infrastructure
+@using PagedList.Mvc
+
+@model ForTest.Web.Areas.Admin.Models.CustomerViewModel
+
+@{
+    ViewBag.Title = "Customers";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Customers</h2>
+
+@using (Html.BeginForm("Index", "Customer", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @* for filter and sort *@
+    <table class="table">
+        <thead>
+            <tr>
+                <td>Id</td>
+                <td>Имя</td>
+                <td>Дата рождения</td>
+                <td style="width: 100px;">Пол</td>
+                <td>Количество заявок</td>
+                <td style="width: 200px;">Сортировка</td>
+                <td></td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@Html.TextBox("CustomerId", Model.Filter.CustomerId, new { @class = "form-control" })</td>
+                <td>@Html.TextBox("Name", Model.Filter.Name, new { @class = "form-control" })</td>
+                <td>
+                    <div class="date input-group">
+                        От: @Html.TextBox("BirthDayFrom", Model.Filter.BirthDayFrom.HasValue ? Model.Filter.BirthDayFrom.Value.ToString("dd/MM/yyyy") : string.Empty, new { @class = "form-control", data_provide="datepicker" })
+                    </div>
+                    <div class="date input-group">
+                        До @Html.TextBox("BirthDayTo", Model.Filter.BirthDayTo.HasValue ? Model.Filter.BirthDayTo.Value.ToString("dd/MM/yyyy") : string.Empty, new { @class = "form-control", data_provide="datepicker" })
+                    </div>
+                </td>
+                <td>
+                    @Html.DropDownList("Gender", Model.GenderList, "None", new { @class = "form-control" })
+                </td>
+                <td>@Html.TextBox("QuantityRequest", Model.Filter.QuantityRequest, new { @class = "form-control" })</td>
+                <td>@Html.DropDownList("Sorting", Model.Filter.Sorting.ToLocalisedSelectItem(), new { @class = "form-control" })</td>
+                <td>
+                    <input type="submit" id="btnSubmit" name="btnSubmit" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    @* end *@
+}
+
+<table class="table table-condensed">
+    <thead>
+        <tr>
+            <th style="width: 75px;">Id</th>
+            <th>Имя</th>
+            <th style="width: 125px;">Дата рождения</th>
+            <th style="width: 80px;">Пол</th>
+            <th style="width: 150px;">Количество заявок</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Customers)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>@item.BirthDay.ToString("d")</td>
+                <td>@item.Gender.ToLocalised()</td>
+                <td>@item.QuantityRequest</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="pager">
+    Total items @Model.Customers.TotalItemCount
+    <br>
+    Page @(Model.Customers.PageCount < Model.Customers.PageNumber ? 0 : Model.Customers.PageNumber) of @Model.Customers.PageCount
+    @Html.PagedListPager(Model.Customers, page => Url.Action("Index", new
+        {
+            page,
+            Model.Filter.CustomerId,
+            Model.Filter.Name,
+            Model.Filter.BirthDayFrom,
+            Model.Filter.BirthDayTo,
+            Model.Filter.Gender,
+            Model.Filter.QuantityRequest,
+            Model.Filter.Sorting
+        }))
+</div>
